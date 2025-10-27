@@ -517,7 +517,7 @@ def handle_csv(file_path, start_index, end_index=None):
     return data_list
 
 # Function to run the scraper
-def run_scraper(file_path, start_index, end_index=None, primary_engine="duckduckgo", output_file="phone_email_output.csv"):
+def run_scraper(file_path, start_index, end_index=None, primary_engine="duckduckgo", output_file="phone_email_output_server.csv"):
     try:
         print("Phone Email Scraper started...")
         print(f"Input file: {file_path}")
