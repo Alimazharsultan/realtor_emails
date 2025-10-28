@@ -439,15 +439,22 @@ def extract_emails_and_links(html_content, search_engine="duckduckgo"):
 
 # Function to handle xlsx files for phone data format (First Name, Last Name, Phone)
 def handle_xlsx(file_path, start_index, end_index=None):
-    wb = openpyxl.load_workbook(file_path)
+    print(f"Loading Excel file '{file_path}'...")
+    wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
     sheet = wb.active
+    print(f"Excel file loaded. Starting to process rows...")
 
     data_list = []
+    rows_processed = 0
     for i, r in enumerate(sheet.iter_rows()):
         if i < start_index:
             continue
         if end_index and i >= end_index:
             break
+        
+        rows_processed += 1
+        if rows_processed % 100 == 0:
+            print(f"  Processed {rows_processed} rows from Excel file...")
         
         # Check if we have valid data in the first three columns
         if r[0].value and r[1].value and r[2].value:
@@ -463,17 +470,25 @@ def handle_xlsx(file_path, start_index, end_index=None):
                     "phone": phone,
                     "full_name": f"{first_name} {last_name}"
                 })
+    
+    wb.close()
+    print(f"Finished loading {len(data_list)} valid records from Excel file.")
     return data_list
 
 # Function to handle xls files for phone data format
 def handle_xls(file_path, start_index, end_index=None):
+    print(f"Loading XLS file '{file_path}'...")
     wb = xlrd.open_workbook(file_path)
     sheet = wb.sheet_by_index(0)
+    print(f"XLS file loaded. Starting to process rows...")
 
     data_list = []
     max_rows = sheet.nrows if not end_index else min(end_index, sheet.nrows)
     
     for i in range(start_index, max_rows):
+        if i % 100 == 0:
+            print(f"  Processed {i - start_index} rows from XLS file...")
+        
         row = sheet.row(i)
         if len(row) >= 3 and row[0].value and row[1].value and row[2].value:
             first_name = str(row[0].value).strip()
@@ -488,11 +503,15 @@ def handle_xls(file_path, start_index, end_index=None):
                     "phone": phone,
                     "full_name": f"{first_name} {last_name}"
                 })
+    
+    print(f"Finished loading {len(data_list)} valid records from XLS file.")
     return data_list
 
 # Function to handle csv files for phone data format
 def handle_csv(file_path, start_index, end_index=None):
+    print(f"Loading CSV file '{file_path}'...")
     data_list = []
+    rows_processed = 0
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         csvreader = csv.reader(csvfile)
         for i, row in enumerate(csvreader):
@@ -500,6 +519,10 @@ def handle_csv(file_path, start_index, end_index=None):
                 continue
             if end_index and i >= end_index:
                 break
+            
+            rows_processed += 1
+            if rows_processed % 100 == 0:
+                print(f"  Processed {rows_processed} rows from CSV file...")
                 
             if len(row) >= 3 and row[0] and row[1] and row[2]:
                 first_name = str(row[0]).strip()
@@ -514,6 +537,8 @@ def handle_csv(file_path, start_index, end_index=None):
                         "phone": phone,
                         "full_name": f"{first_name} {last_name}"
                     })
+    
+    print(f"Finished loading {len(data_list)} valid records from CSV file.")
     return data_list
 
 # Function to run the scraper
